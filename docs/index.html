@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dry Run Studio v1.0.0 — Check it on localhost before it goes to cloud | SRP Hub</title>
+  <meta name="description" content="A standalone Windows utility for running isolated local production builds, tracking file diffs, and deploying to GitHub and Cloudflare Pages in one click." />
+  <meta name="theme-color" content="#FFFFFF" />
+  <link rel="canonical" href="https://dryrun.srphub.in/" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230B7A45'/%3E%3Cpath d='M12 9l12 7-12 7z' fill='white'/%3E%3C/svg%3E" />
+
+  <meta property="og:title" content="Dry Run Studio v1.0.0 — SRP Hub" />
+  <meta property="og:description" content="Check it on localhost before it goes to cloud. Local production build verification, line-by-line diffs, and 1-click GitHub + Cloudflare Pages deployment." />
+  <meta property="og:url" content="https://dryrun.srphub.in/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Dry Run Studio v1.0.0 — SRP Hub" />
+  <meta name="twitter:description" content="Check it on localhost before it goes to cloud. Local build verification, file diffs, and 1-click GitHub + Cloudflare Pages deploys for Windows." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Dry Run Studio",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows 10, Windows 11",
+    "softwareVersion": "1.0.0",
+    "description": "A standalone Windows utility for running isolated local production builds, tracking file diffs, and deploying to GitHub and Cloudflare Pages in one click.",
+    "url": "https://dryrun.srphub.in/",
+    "license": "https://github.com/srphub-in/dryrun-studio/blob/main/LICENSE",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "SRP Hub", "url": "https://srphub.in" }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@800&family=Plus+Jakarta+Sans:wght@700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #FFFFFF;
+      --tint: #F4F5F2;
+      --ink: #16201A;
+      --muted: #525E56;
+      --line: #D8DDD8;
+      --brand: #0B7A45;
+      --brand-hover: #085C33;
+      --brand-soft: #E8F3ED;
+      --forest: #0A3622;
+      --forest-card: #0F462D;
+      --forest-border: rgba(228, 241, 234, 0.18);
+      --forest-ink: #E6F2EC;
+      --forest-dim: #A3C6B4;
+      --term-bg: #131719;
+      --term-ink: #D8DEDA;
+      --term-dim: #7E8A84;
+      --term-ok: #5FD58C;
+      --term-path: #E6C06B;
+
+      /* 6-Tier Font Families */
+      --font-hero: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-ui: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-meta: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+
+      --sans: var(--font-body);
+      --display: var(--font-heading);
+      --body: var(--font-body);
+
+      /* Existing uniform typographic scale (sizes kept intact) */
+      --fs-title: clamp(2.15rem, 3.6vw, 2.85rem); /* Hero H1 Title */
+      --fs-h2: clamp(1.55rem, 2.5vw, 1.95rem);    /* All Section Headings (H2) */
+      --fs-h3: 1.125rem;                          /* All Subheadings, Card Titles & Lead Subheads (18px) */
+      --fs-body: 1rem;                            /* All Body Matter, Table Cells & Descriptions (16px) */
+      --fs-ui: 0.9375rem;                         /* Navigation & Buttons (15px) */
+      --fs-note: 0.8125rem;                       /* All Fine Print, Captions, Badges & Footer Notes (13px) */
+
+      --gutter: 24px;
+      --section-y: clamp(40px, 5vw, 64px);
+      --split-gap: clamp(24px, 4vw, 48px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    * { margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      font-weight: 400;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--brand); text-underline-offset: 3px; }
+    a:hover { color: var(--brand-hover); }
+    :focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; border-radius: 4px; }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      font-weight: 400;
+      background: var(--tint);
+      border: 1px solid rgba(22, 32, 26, 0.08);
+      padding: 2px 6px;
+      border-radius: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 var(--gutter); }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--split-gap); align-items: start; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    section[id] { scroll-margin-top: 16px; }
+
+    .skip {
+      position: absolute; left: 16px; top: -64px; z-index: 50;
+      padding: 10px 16px; border-radius: 8px;
+      background: var(--ink); color: #fff;
+      font-family: var(--font-ui); font-weight: 700; text-decoration: none;
+    }
+    .skip:focus { top: 16px; color: #fff; }
+
+    h1 { font-family: var(--font-hero); font-weight: 800; }
+    h2, h3, th, .brand, .diagram-header { font-family: var(--font-heading); }
+    .btn { font-family: var(--font-ui); }
+    .eyebrow { font-family: var(--font-meta); }
+    h1, h2, h3 { text-wrap: balance; }
+    p { font-family: var(--font-body); font-weight: 400; text-wrap: pretty; font-size: var(--fs-body); line-height: 1.65; }
+    h2 { font-size: var(--fs-h2); font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
+    h3 { font-size: var(--fs-h3); font-weight: 700; line-height: 1.35; letter-spacing: -0.015em; }
+
+    /* ---------- header ---------- */
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .site-header .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 24px;
+      padding-top: 13px;
+      padding-bottom: 13px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: var(--fs-h3);
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand:hover { color: var(--ink); }
+    .brand-badge {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: var(--brand);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .brand-badge svg { width: 11px; height: 11px; fill: #fff; margin-left: 2px; }
+    .site-header nav { display: flex; flex-wrap: wrap; gap: 4px 24px; font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-ui); }
+    .site-header nav a { color: var(--ink); text-decoration: none; padding: 4px 0; }
+    .site-header nav a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+
+    /* ---------- buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 46px;
+      padding: 10px 20px;
+      border-radius: 9px;
+      border: 2px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: var(--fs-ui);
+      line-height: 1.2;
+      text-decoration: none;
+      transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { background: var(--tint); color: var(--ink); }
+    .btn:active { transform: translateY(1px); }
+    .btn svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .btn-main { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .btn-main:hover { background: var(--brand-hover); border-color: var(--brand-hover); color: #fff; }
+
+    /* ---------- hero ---------- */
+    .hero { padding: clamp(32px, 4.5vw, 52px) 0 var(--section-y); }
+    .hero .split { grid-template-columns: 1.02fr 1.08fr; align-items: center; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-meta);
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--brand);
+      background: var(--brand-soft);
+      padding: 3px 9px;
+      border-radius: 999px;
+      margin-top: 16px;
+    }
+    .eyebrow-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+    .hero h1 {
+      font-family: var(--font-hero);
+      font-size: var(--fs-title);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+    .hero-lead {
+      margin-top: 16px;
+      max-width: 48ch;
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: var(--fs-body);
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    .cta-row { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .fine-print { margin-top: 10px; max-width: 48ch; font-family: var(--font-meta); font-weight: 400; font-size: var(--fs-note); line-height: 1.55; color: var(--muted); }
+
+    .term-wrap figcaption { margin-top: 10px; font-family: var(--font-meta); font-weight: 400; font-size: var(--fs-note); line-height: 1.55; color: var(--muted); text-align: right; }
+    .term {
+      background: var(--term-bg);
+      color: var(--term-ink);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px -12px rgba(14, 24, 18, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .term-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 18px;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      color: var(--term-dim);
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(216, 222, 218, 0.12);
+    }
+    .term-dots { display: inline-flex; gap: 6px; margin-right: 8px; vertical-align: middle; }
+    .term-dots i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: rgba(216, 222, 218, 0.22); }
+    .term-body {
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      line-height: 1.75;
+    }
+    .ln { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .ln .dim { color: var(--term-dim); }
+    .ln .path { color: var(--term-path); }
+    .ln.cmd { color: #fff; font-weight: 500; }
+    .ln.ok { color: var(--term-ok); font-weight: 500; }
+    .ln.rule { height: 0; margin: 8px 0; border-top: 1px dashed rgba(216, 222, 218, 0.22); }
+    .anim .ln.hide { visibility: hidden; }
+
+    /* ---------- why + how + disk diagram ---------- */
+    .why { padding: var(--section-y) 0; border-top: 1px solid var(--line); }
+    .why-top {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: var(--split-gap);
+      align-items: start;
+    }
+    .why-subblock {
+      margin-top: clamp(36px, 4.5vw, 52px);
+      padding-top: clamp(32px, 4vw, 48px);
+      border-top: 1px solid var(--line);
+    }
+    .section-subhead {
+      margin-top: 8px;
+      font-family: var(--font-ui);
+      font-size: var(--fs-h3);
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+    .why-text p { max-width: 62ch; font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body); color: var(--ink); }
+    .why-text p + p { margin-top: 0.9em; }
+
+    /* Plain Seamless Disk Architecture Diagram */
+    .disk-diagram {
+      margin-top: clamp(26px, 3.5vw, 38px);
+      padding: clamp(18px, 2.5vw, 24px) 0;
+      background: transparent;
+      color: var(--ink);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .diagram-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-family: var(--font-heading);
+      font-size: var(--fs-h3);
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .diagram-tag {
+      font-family: var(--font-meta);
+      font-size: var(--fs-note);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--brand);
+    }
+    .diagram-pre {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: var(--mono);
+      font-size: 0.81rem;
+      font-weight: 400;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink);
+    }
+    .diagram-pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+    .diagram-pre .hl-head { color: var(--ink); font-weight: 700; }
+    .diagram-pre .hl-sep { color: var(--muted); }
+    .diagram-pre .hl-src { color: var(--ink); font-weight: 600; }
+    .diagram-pre .hl-ok { color: var(--brand); font-weight: 600; }
+
+    .table-scroll { margin-top: clamp(28px, 4vw, 40px); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      padding: 0 20px 10px 0;
+      font-family: var(--font-heading);
+      font-size: var(--fs-h3);
+      font-weight: 700;
+      border-bottom: 2px solid var(--ink);
+    }
+    th:last-child { padding-right: 0; color: var(--brand); }
+    td { padding: 13px 20px 13px 0; vertical-align: top; border-bottom: 1px solid var(--line); font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body); line-height: 1.55; }
+    td:last-child { padding-right: 0; font-weight: 500; }
+    td:first-child { width: 22%; font-family: var(--font-heading); font-weight: 700; }
+    td:nth-child(2) { color: var(--muted); }
+
+    /* ---------- features ---------- */
+    .inside { padding: var(--section-y) 0; background: var(--tint); border-top: 1px solid var(--line); }
+    .inside-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 24px;
+      margin-bottom: clamp(18px, 2.5vw, 26px);
+    }
+    .inside-head p { color: var(--muted); font-family: var(--font-ui); font-size: var(--fs-h3); font-weight: 600; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .feature {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feature-num {
+      font-family: var(--font-meta);
+      font-size: var(--fs-note);
+      font-weight: 600;
+      color: var(--brand);
+      letter-spacing: 0.04em;
+    }
+    .feature p { font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body); line-height: 1.6; color: var(--muted); }
+
+    /* ---------- download (strictly aligned cards) ---------- */
+    .get { padding: var(--section-y) 0; background: var(--forest); color: var(--forest-ink); }
+    .get-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 24px;
+      margin-bottom: clamp(22px, 3vw, 32px);
+    }
+    .get h2, .get h3 { color: #fff; }
+    .get-intro { color: var(--forest-dim); font-family: var(--font-ui); font-size: var(--fs-h3); font-weight: 600; }
+
+    .dl-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .dl-card {
+      background: var(--forest-card);
+      border: 1px solid var(--forest-border);
+      border-radius: 14px;
+      padding: 26px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .dl-card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dl-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .dl-tag {
+      font-family: var(--font-meta);
+      font-size: var(--fs-note);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: rgba(95, 213, 140, 0.16);
+      color: var(--term-ok);
+    }
+    .dl-tag-secondary {
+      background: rgba(228, 241, 234, 0.1);
+      color: var(--forest-dim);
+    }
+    .dl-card h3 { font-family: var(--font-heading); font-weight: 700; font-size: var(--fs-h3); }
+    .dl-card p { font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body); line-height: 1.6; color: var(--forest-ink); opacity: 0.92; }
+    .get code {
+      background: rgba(0, 0, 0, 0.28);
+      border-color: rgba(228, 241, 234, 0.14);
+      color: #fff;
+    }
+    .get :focus-visible { outline-color: #fff; }
+
+    .dl-card-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .file-line {
+      min-height: 46px;
+      padding: 8px 14px;
+      border-radius: 9px;
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid rgba(228, 241, 234, 0.12);
+      font-family: var(--mono);
+      font-size: var(--fs-note);
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--forest-ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      overflow-wrap: anywhere;
+    }
+    .file-line > :first-child { flex: 1 1 auto; min-width: 0; }
+    .file-meta {
+      font-family: var(--font-meta);
+      font-weight: 600;
+      color: var(--forest-dim);
+      font-size: var(--fs-note);
+      white-space: nowrap;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      min-width: 64px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(228, 241, 234, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      font-family: var(--font-ui);
+      font-size: var(--fs-note);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    .copy-btn:hover { background: rgba(228, 241, 234, 0.18); }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .actions-two {
+      grid-template-columns: 1fr 1fr;
+    }
+    .get .btn {
+      width: 100%;
+      border-color: rgba(228, 241, 234, 0.45);
+      color: var(--forest-ink);
+    }
+    .get .btn:hover { background: rgba(228, 241, 234, 0.1); color: #fff; border-color: #fff; }
+    .get .btn-main { background: #fff; border-color: #fff; color: var(--forest); }
+    .get .btn-main:hover { background: var(--forest-ink); border-color: var(--forest-ink); color: var(--forest); }
+
+    /* ---------- footer ---------- */
+    .site-footer { padding: 20px 0 24px; font-family: var(--font-meta); font-weight: 400; font-size: var(--fs-note); line-height: 1.55; color: var(--muted); border-top: 1px solid var(--line); }
+    .site-footer strong { font-weight: 600; }
+    .site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 32px; }
+
+    /* ---------- tablet and below ---------- */
+    @media (max-width: 920px) {
+      .split, .hero .split, .why-top, .dl-grid { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+      .term-wrap figcaption { text-align: left; }
+    }
+
+    /* ---------- phones ---------- */
+    @media (max-width: 640px) {
+      :root {
+        --gutter: 18px;
+        --fs-body: 0.96875rem;
+        --fs-h3: 1.0625rem;
+      }
+      .site-header .wrap { flex-direction: column; align-items: flex-start; padding-top: 10px; padding-bottom: 10px; }
+      .site-header nav { gap: 2px 16px; }
+      .ln .ts { display: none; }
+      .cta-row, .actions-two { grid-template-columns: 1fr; flex-direction: column; }
+      .cta-row .btn { width: 100%; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .dl-card { padding: 20px; }
+      .term-body { font-size: 0.68rem; padding: 14px; }
+      .term-title { padding: 8px 14px; font-size: 0.7rem; }
+      .diagram-pre { font-size: 0.68rem; padding: 4px 0; }
+      .site-footer .wrap { flex-direction: column; }
+
+      /* comparison table turns into stacked rows */
+      thead { position: absolute; left: -9999px; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      tbody tr:first-child { border-top: 2px solid var(--ink); }
+      tr { padding: 14px 0; border-bottom: 1px solid var(--line); }
+      td { padding: 0; border: none; }
+      td:first-child { width: 100%; margin-bottom: 4px; font-size: var(--fs-h3); }
+      td:nth-child(2), td:nth-child(3) { margin-top: 8px; }
+      td:nth-child(2)::before, td:nth-child(3)::before {
+        display: block;
+        font-family: var(--font-meta);
+        font-size: var(--fs-note);
+        font-weight: 600;
+        color: var(--muted);
+      }
+      td:nth-child(2)::before { content: "Direct cloud push"; }
+      td:nth-child(3)::before { content: "With Dry Run Studio"; color: var(--brand); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a href="/" class="brand">
+        <span class="brand-badge" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M1 0.5 L11 6 L1 11.5 Z"/></svg></span>
+        Dry Run Studio
+      </a>
+      <nav aria-label="Main">
+        <a href="#why">Why it helps</a>
+        <a href="#how">How it works</a>
+        <a href="#inside">What’s inside</a>
+        <a href="#download">Download</a>
+        <a href="https://github.com/srphub-in/dryrun-studio" id="gh-nav-link" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap split">
+        <div>
+          <h1>Check it on localhost before it goes to cloud.</h1>
+          <p class="hero-lead">
+            Dry Run Studio builds and smoke-tests your project in a separate scratch folder, shows you exactly which files changed, and only then pushes to GitHub and Cloudflare Pages.
+          </p>
+          <div class="cta-row">
+            <a href="https://github.com/srphub-in/dryrun-studio/releases/latest/download/DryRun-Studio-v1.0.0-Portable.bat" id="dl-portable-btn" class="btn btn-main">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download portable .bat
+            </a>
+            <a href="https://github.com/srphub-in/dryrun-studio/archive/refs/heads/main.zip" id="dl-zip-btn" class="btn">
+              Get the source (.zip)
+            </a>
+          </div>
+          <div class="eyebrow">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            v1.0.0 for Windows 10 &amp; 11
+          </div>
+          <p class="fine-print">
+            Needs Node.js LTS and nothing else: runs on Node’s built-in modules with zero npm dependencies. Free and open source under the MIT license.
+          </p>
+        </div>
+
+        <figure class="term-wrap">
+          <div class="term" role="img" aria-label="Example log of a Dry Run Studio build: six steps finish with exit code 0 and a local preview is ready.">
+            <div class="term-title" aria-hidden="true">
+              <span><span class="term-dots"><i></i><i></i><i></i></span>Launch-Studio.bat</span>
+              <span>127.0.0.1:49152</span>
+            </div>
+            <div class="term-body" aria-hidden="true">
+              <div class="ln cmd">G:\Projects\web-app&gt; Launch-Studio.bat</div>
+              <div class="ln rule"></div>
+              <div class="ln"><span class="dim ts">[10:14:02] </span>SOURCE  : <span class="path">G:\Projects\web-app</span> (read-only)</div>
+              <div class="ln"><span class="dim ts">[10:14:02] </span>SANDBOX : <span class="path">D:\DryRun_Sandbox\_ephemeral_run</span></div>
+              <div class="ln"><span class="dim ts">[10:14:02] </span>[1/6] Synced 4 modified files (142 cached)</div>
+              <div class="ln"><span class="dim ts">[10:14:02] </span>[2/6] Baseline diff: 4 files changed</div>
+              <div class="ln"><span class="dim ts">[10:14:03] </span>[3/6] Pre-flight check: 0 exposed tokens</div>
+              <div class="ln"><span class="dim ts">[10:14:03] </span>[4/6] Mounted node_modules junction (0.04s)</div>
+              <div class="ln" data-d="900"><span class="dim ts">[10:14:08] </span>[5/6] npm run build -&gt; exit code 0 (5.1s)</div>
+              <div class="ln"><span class="dim ts">[10:14:08] </span>[6/6] Smoke test: 22 HTML routes, 0 broken refs</div>
+              <div class="ln ok" data-d="600"><span class="ts">[10:14:09] </span>READY -&gt; Local preview on 127.0.0.1:8788</div>
+              <div class="ln rule"></div>
+              <div class="ln cmd">&gt; Cloud Deploy: git push + Cloudflare build live.</div>
+            </div>
+          </div>
+          <figcaption>Works with Astro, Vite, React, Vue, Next and plain static sites.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="why" class="why">
+      <div class="wrap">
+        <div class="why-top">
+          <div>
+            <h2>Why it helps</h2>
+            <p class="section-subhead">A safer path from your edits to a live site.</p>
+          </div>
+          <div class="why-text">
+            <p>
+              Dry Run Studio turns your release process into a clear, guided workflow. It prepares an isolated copy of your project, keeps your working folder untouched, checks for common issues, and runs your production build locally before anything is sent to GitHub or Cloudflare Pages.
+            </p>
+            <p>
+              When the checks pass, review the exact file changes, stage and commit your work, then push from the same window. Dry Run Studio follows the Cloudflare Pages build and streams its progress and logs, giving you a clearer view of what is being published—from the first local check to the live site.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col"><span class="sr-only">Step</span></th>
+                <th scope="col">Direct cloud push</th>
+                <th scope="col">With Dry Run Studio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Build order</td>
+                <td>Push first, find out about errors later</td>
+                <td>Build and verify on localhost, then push</td>
+              </tr>
+              <tr>
+                <td>Editing many files</td>
+                <td>Easy to lose track of what changed across folders</td>
+                <td>Tracks a baseline and shows line-by-line diffs</td>
+              </tr>
+              <tr>
+                <td>Pushing to GitHub</td>
+                <td>Browser uploads, or the same CLI commands over and over</td>
+                <td>Stage, commit and push from the window</td>
+              </tr>
+              <tr>
+                <td>Your source folder</td>
+                <td>Fills up with <code>dist/</code> and <code>node_modules/</code></td>
+                <td>Stays read-only; builds happen in a scratch copy</td>
+              </tr>
+              <tr>
+                <td>Cloudflare Pages</td>
+                <td>Switch tabs to see why a build failed</td>
+                <td>Build stages stream live in the app, with retry</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="how" class="why-top why-subblock" style="scroll-margin-top: 72px;">
+          <div>
+            <h2>How it works</h2>
+            <p class="section-subhead">Why build in an isolated local sandbox before deploying?</p>
+          </div>
+          <div class="why-text">
+            <p>
+              Triggering a cloud deployment just to verify whether a production bundle compiles wastes CI minutes, pollutes your Git commit history with trial-and-error fixes, and slows down feedback loops. Conversely, running <code>npm run build</code> directly inside your active repository generates <code>dist/</code> clutter and locks files while you are still working.
+            </p>
+            <p>
+              Dry Run Studio separates editing from verification. It delta-syncs your modified files into an isolated scratch directory, links your existing <code>node_modules</code> in milliseconds via Windows NTFS junctions, and runs a full production build and route audit locally. Your source folder stays 100% untouched, and only verified, working code ever gets pushed to GitHub and Cloudflare Pages.
+            </p>
+          </div>
+        </div>
+
+        <div class="disk-diagram" role="region" aria-label="Diagram showing how the isolated scratch build works on disk">
+          <div class="diagram-header">
+            <span>How the isolated scratch build works on disk</span>
+            <span class="diagram-tag">Zero Source Clutter</span>
+          </div>
+          <pre class="diagram-pre"><code><span class="hl-head">Your Source Folder (Kept 100% Read-Only)     Scratch Sandbox (Ephemeral Build Target)</span>
+<span class="hl-sep">========================================     ========================================</span>
+<span class="hl-src">G:\Projects\web-app\</span>                         <span class="hl-src">D:\DryRun_Sandbox\_ephemeral_run\</span>
+ ├── src\               <span class="hl-ok">─── delta sync ───►</span>   ├── src\
+ ├── package.json                             ├── package.json
+ └── (zero build clutter)                     ├── node_modules\  <span class="hl-ok">◄── [NTFS Junction: 0.04s]</span>
+                                              └── dist\          <span class="hl-ok">◄── [Smoke-tested &amp; served on :8788]</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="inside" class="inside">
+      <div class="wrap">
+        <div class="inside-head">
+          <h2>What’s inside</h2>
+          <p>Six parts that handle the steps between “saved the file” and “it’s live”.</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature">
+            <span class="feature-num">01 / SANDBOX</span>
+            <h3>A scratch folder, not your repo</h3>
+            <p>Your source is synced to a separate sandbox directory, and cached dependencies are linked in through Windows junctions. Your repository folder stays clean.</p>
+          </div>
+          <div class="feature">
+            <span class="feature-num">02 / DIFF ENGINE</span>
+            <h3>A baseline that moves with you</h3>
+            <p>Modified, added and deleted files are tracked against your last working build. After a successful cloud deploy, that build becomes the new baseline automatically.</p>
+          </div>
+          <div class="feature">
+            <span class="feature-num">03 / VERIFICATION</span>
+            <h3>Pre-flight and smoke tests</h3>
+            <p>Before building, it scans for exposed API keys, merge conflict markers and leftover <code>debugger;</code> statements. Afterwards it checks every built HTML route for broken local links.</p>
+          </div>
+          <div class="feature">
+            <span class="feature-num">04 / DIAGNOSTICS</span>
+            <h3>Error reports in Markdown</h3>
+            <p>Compiler stack traces, JavaScript errors from the live preview, missing assets that return 404, and bundle sizes all go into a single .md report.</p>
+          </div>
+          <div class="feature">
+            <span class="feature-num">05 / SECURITY</span>
+            <h3>Credentials stay on your machine</h3>
+            <p>Each repository’s GitHub remote and Cloudflare API token are stored locally, encrypted with Windows DPAPI and tied to your user account.</p>
+          </div>
+          <div class="feature">
+            <span class="feature-num">06 / DEPLOYMENT</span>
+            <h3>Push, then watch the build</h3>
+            <p>Stages, commits and pushes multi-file changes to GitHub, then streams the Cloudflare Pages build stages and logs in the same window.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="download" class="get">
+      <div class="wrap">
+        <div class="get-header">
+          <h2>Download Dry Run Studio</h2>
+          <p class="get-intro">Pick the single file if you just want it running, or the source if you’d like to inspect it first.</p>
+        </div>
+
+        <div class="dl-grid">
+          <!-- Card 1: Portable -->
+          <div class="dl-card">
+            <div class="dl-card-top">
+              <div class="dl-badge-row">
+                <h3>Portable: one .bat file, any PC</h3>
+                <span class="dl-tag">Recommended</span>
+              </div>
+              <p>
+                The Node.js server, the sandbox builder and the interface are packed into one self-extracting batch script. On first launch you choose your scratch workspace folder and, if you want them, Desktop or Start Menu shortcuts.
+              </p>
+            </div>
+
+            <div class="dl-card-bottom">
+              <div class="file-line">
+                <span>DryRun-Studio-v1.0.0-Portable.bat</span>
+                <span class="file-meta">about 75 KB</span>
+              </div>
+              <div class="actions">
+                <a href="https://github.com/srphub-in/dryrun-studio/releases/latest/download/DryRun-Studio-v1.0.0-Portable.bat" class="btn btn-main">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download portable v1.0.0
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Source -->
+          <div class="dl-card">
+            <div class="dl-card-top">
+              <div class="dl-badge-row">
+                <h3>Or read the source</h3>
+                <span class="dl-tag dl-tag-secondary">MIT Licensed</span>
+              </div>
+              <p>
+                Plain, unminified ES modules: <code>server.mjs</code>, <code>sandbox-engine.mjs</code>, <code>cloud-deployer.mjs</code> and <code>ui.html</code>. Run it with <code>Launch-Studio.bat</code>, or build your own single file whenever you like with <code>Pack-Portable-Single.bat</code>.
+              </p>
+            </div>
+
+            <div class="dl-card-bottom">
+              <div class="file-line">
+                <span id="clone-cmd">git clone https://github.com/srphub-in/dryrun-studio.git</span>
+                <button type="button" class="copy-btn" id="copy-btn" aria-live="polite">Copy</button>
+              </div>
+              <div class="actions actions-two">
+                <a href="https://github.com/srphub-in/dryrun-studio/archive/refs/heads/main.zip" class="btn">Download source (.zip)</a>
+                <a href="https://github.com/srphub-in/dryrun-studio" target="_blank" rel="noopener" class="btn">Browse on GitHub</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div><strong>Dry Run Studio v1.0.0</strong> by SRP Hub</div>
+      <div>
+        © 2026 <a href="https://srphub.in" target="_blank" rel="noopener">SRP Hub</a>. Released under the <a href="https://github.com/srphub-in/dryrun-studio/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Plays the build log once on load, line by line. Without JS (or with reduced motion) the full log just shows.
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var lines = document.querySelectorAll('.term-body .ln');
+      if (!lines.length) return;
+      document.documentElement.classList.add('anim');
+      lines.forEach(function (l) { l.classList.add('hide'); });
+      var i = 0;
+      function next() {
+        if (i >= lines.length) return;
+        var el = lines[i++];
+        el.classList.remove('hide');
+        setTimeout(next, parseInt(el.getAttribute('data-d'), 10) || 260);
+      }
+      setTimeout(next, 450);
+    })();
+
+    // Copy button for the git clone command.
+    (function () {
+      var btn = document.getElementById('copy-btn'), src = document.getElementById('clone-cmd');
+      if (!btn || !src) return;
+      function flash(text) { btn.textContent = text; setTimeout(function () { btn.textContent = 'Copy'; }, 1800); }
+      function fallback(t) {
+        var ok = false, a = document.createElement('textarea');
+        a.value = t; a.style.position = 'fixed'; a.style.opacity = '0';
+        document.body.appendChild(a); a.select();
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(a);
+        if (!ok) {
+          var sel = window.getSelection(), range = document.createRange();
+          range.selectNodeContents(src); sel.removeAllRanges(); sel.addRange(range);
+        }
+        flash(ok ? 'Copied' : 'Selected');
+      }
+      btn.addEventListener('click', function () {
+        var t = src.textContent.trim();
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(t).then(function () { flash('Copied'); }, function () { fallback(t); });
+        } else { fallback(t); }
+      });
+    })();
+  </script>
+</body>
+</html>

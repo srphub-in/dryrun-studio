@@ -1,0 +1,15 @@
+{
+  "name": "dryrun-studio",
+  "version": "1.0.0",
+  "description": "Dry Run Studio — Check it on localhost before it goes to cloud. By SRP Hub (srphub.in)",
+  "type": "module",
+  "scripts": {
+    "build": "node -e \"import('node:fs').then(fs => { fs.cpSync('docs', 'dist', { recursive: true }); console.log('Built docs/ to dist/ for preview!'); })\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/srphub-in/dryrun-studio.git"
+  },
+  "author": "SRP Hub (https://srphub.in)",
+  "license": "MIT"
+}

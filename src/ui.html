@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dry Run Studio v1.0.0 — Check it on localhost before it goes to cloud | SRP Hub</title>
+  <style>
+    :root {
+      --bg: #0C0B0A;
+      --panel: #161412;
+      --panel-sub: #11100E;
+      --panel-elev: #211E1B;
+      --border: #2E2925;
+      --ink: #F7F3EE;
+      --muted: #9E9488;
+      --accent: #FF6B2B;
+      --accent-glow: rgba(255, 107, 43, 0.28);
+      --green: #12B886;
+      --red: #FA5252;
+      --yellow: #FAB005;
+      --blue: #339AF0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #1F1B18 0%, #090807 100%);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      transition: opacity 0.55s ease, visibility 0.55s ease;
+    }
+    #splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-logo {
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #FF6B2B 0%, #D9480F 100%);
+      display: grid;
+      place-items: center;
+      font-size: 2.2rem;
+      box-shadow: 0 18px 45px rgba(255, 107, 43, 0.38);
+      animation: pulseLogo 1.5s infinite ease-in-out;
+    }
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    .splash-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .splash-ver {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 107, 43, 0.18);
+      color: var(--accent);
+      border: 1px solid rgba(255, 107, 43, 0.4);
+      font-weight: 800;
+    }
+    .splash-tagline {
+      font-size: 0.96rem;
+      color: #D0C7BC;
+      font-weight: 600;
+    }
+    .splash-bar {
+      width: 280px;
+      height: 5px;
+      background: #26221E;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .splash-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #FF6B2B, #FFA94D);
+      animation: slideLoad 3.0s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      transform-origin: left;
+    }
+    @keyframes slideLoad {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    .splash-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-shell {
+      background: var(--panel);
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .topbar-row1 {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .topbar-row2 {
+      min-height: 42px;
+      background: var(--panel-sub);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 18px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+    }
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #FF6B2B, #E8590C);
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      color: #fff;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .brand-sub {
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 600;
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+    }
+    .mode-tabs {
+      display: inline-flex;
+      background: #0B0A09;
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+    .mode-tab {
+      border: none !important;
+      padding: 6px 18px !important;
+      border-radius: 999px !important;
+      font-size: 0.78rem !important;
+      background: transparent !important;
+      color: var(--muted) !important;
+      font-weight: 800 !important;
+    }
+    .mode-tab.active {
+      background: var(--accent) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.71rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: rgba(255, 107, 43, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(255, 107, 43, 0.35);
+    }
+    .badge.live {
+      background: rgba(18, 184, 134, 0.15);
+      color: var(--green);
+      border-color: rgba(18, 184, 134, 0.4);
+    }
+    .row-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .audit-stats {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: #1A1816;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .audit-stats:hover {
+      border-color: var(--accent);
+      color: var(--ink);
+    }
+
+    button, select {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.77rem;
+      padding: 6px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-elev);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      outline: none;
+    }
+    button:hover:not(:disabled), select:hover:not(:disabled) {
+      border-color: var(--muted);
+      background: #2C2824;
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-active {
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      background: rgba(255, 107, 43, 0.14) !important;
+    }
+    .btn-warn {
+      border-color: rgba(250, 176, 5, 0.5) !important;
+      color: var(--yellow) !important;
+      background: rgba(250, 176, 5, 0.14) !important;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #FF6B2B 0%, #E8590C 100%);
+      color: #fff;
+      border-color: #FF6B2B;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FF7E47 0%, #F76707 100%);
+      border-color: #FF7E47;
+    }
+    .btn-md {
+      background: rgba(18, 184, 134, 0.15);
+      color: #38d9a9;
+      border-color: rgba(18, 184, 134, 0.45);
+    }
+    .btn-md:hover:not(:disabled) {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-blue {
+      background: rgba(51, 154, 240, 0.15);
+      color: #74C0FC;
+      border-color: rgba(51, 154, 240, 0.45);
+    }
+    .btn-blue:hover:not(:disabled) {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-danger {
+      background: rgba(250, 82, 82, 0.18);
+      color: #ff8787;
+      border-color: rgba(250, 82, 82, 0.45);
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: var(--red);
+      color: #fff;
+    }
+    .vp-group {
+      display: none;
+      align-items: center;
+      gap: 2px;
+      background: #0B0A09;
+      padding: 2px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+    .vp-group button {
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.73rem;
+      background: transparent;
+    }
+
+    #setup-view, #deploy-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 18px;
+      gap: 12px;
+      overflow: hidden;
+      width: 100%;
+    }
+    #deploy-view { display: none; }
+
+    .launcher-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 0.55fr;
+      gap: 14px;
+    }
+    .card-box {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.73rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .project-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+      max-height: 118px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .proj-card {
+      background: #100F0D;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+    .proj-card:hover {
+      border-color: var(--accent);
+      background: rgba(255, 107, 43, 0.06);
+    }
+    .proj-card.selected {
+      border-color: var(--accent);
+      background: rgba(255, 107, 43, 0.13);
+      box-shadow: 0 6px 18px rgba(255, 107, 43, 0.12);
+    }
+    .proj-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .proj-title {
+      font-weight: 800;
+      font-size: 0.86rem;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .proj-fw {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--panel-elev);
+      color: var(--accent);
+      border: 1px solid rgba(255, 107, 43, 0.3);
+      flex-shrink: 0;
+    }
+    .proj-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: Consolas, monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .mini-tag {
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.65rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: #D0C7BC;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      background: #100F0D;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+      flex: 1;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .drop-zone.dragover, .drop-zone:hover {
+      border-color: var(--accent);
+      background: rgba(255, 107, 43, 0.07);
+    }
+    .action-bar {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="text"], input[type="password"] {
+      flex: 1;
+      padding: 8px 13px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      background: #0B0A09;
+      color: var(--ink);
+      font-family: Consolas, monospace;
+      font-size: 0.82rem;
+      outline: none;
+      user-select: text;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: var(--accent);
+    }
+
+    .cloud-config-bar {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .cloud-action-dock {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.25fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .dock-pill-btn {
+      padding: 13px 18px !important;
+      border-radius: 999px !important;
+      font-size: 0.86rem !important;
+      font-weight: 800 !important;
+      justify-content: center !important;
+      letter-spacing: -0.01em;
+    }
+    .dock-git-btn {
+      background: linear-gradient(135deg, #2B3036 0%, #1B1F23 100%) !important;
+      border: 1.5px solid #495057 !important;
+      color: #fff !important;
+    }
+    .dock-git-btn:hover:not(:disabled) {
+      border-color: #868E96 !important;
+      background: linear-gradient(135deg, #343A40 0%, #212529 100%) !important;
+    }
+    .dock-cf-btn {
+      background: linear-gradient(135deg, rgba(18, 184, 134, 0.22) 0%, rgba(12, 133, 153, 0.22) 100%) !important;
+      border: 1.5px solid rgba(18, 184, 134, 0.55) !important;
+      color: #63E6BE !important;
+    }
+    .dock-cf-btn:hover:not(:disabled) {
+      background: var(--green) !important;
+      color: #fff !important;
+    }
+    .dock-combo-btn {
+      background: linear-gradient(135deg, #FF6B2B 0%, #E8590C 100%) !important;
+      border: 1.5px solid #FF8752 !important;
+      color: #fff !important;
+      box-shadow: 0 8px 24px rgba(255, 107, 43, 0.32) !important;
+    }
+    .dock-combo-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FF7E47 0%, #F76707 100%) !important;
+      box-shadow: 0 10px 28px rgba(255, 107, 43, 0.45) !important;
+    }
+
+    .cf-status-bar {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .cf-stage-strip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .cf-stage-pill {
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      background: #1D1A17;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .cf-stage-pill.active {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      background: rgba(250, 176, 5, 0.12);
+    }
+    .cf-stage-pill.success {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(18, 184, 134, 0.12);
+    }
+    .cf-stage-pill.failure {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(250, 82, 82, 0.15);
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding: 0 4px;
+      gap: 8px;
+    }
+    .terminal-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .terminal-box {
+      flex: 1;
+      background: #080706;
+      border: 1.5px solid var(--border);
+      border-radius: 13px;
+      padding: 14px;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 0.81rem;
+      line-height: 1.52;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+    }
+    .log-line { margin-bottom: 3px; }
+    .log-cmd { color: #FFA94D; font-weight: 700; }
+    .log-stderr { color: #FF8787; }
+    .log-error { color: #FA5252; font-weight: 700; }
+    .log-success { color: #40C057; font-weight: 700; }
+    .log-info { color: #74C0FC; }
+
+    #preview-view {
+      flex: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: #0B0A09;
+      overflow: hidden;
+    }
+    #iframe-shell {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      transition: width 0.22s ease, height 0.22s ease, border-radius 0.22s ease;
+      overflow: hidden;
+      display: flex;
+    }
+    #iframe-shell.vp-tablet {
+      width: 768px;
+      height: 94%;
+      border-radius: 16px;
+      border: 4px solid #332E29;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+    }
+    #iframe-shell.vp-mobile {
+      width: 390px;
+      height: 844px;
+      max-height: 94%;
+      border-radius: 28px;
+      border: 6px solid #332E29;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+    }
+    #preview-iframe {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .studio-footer {
+      height: 28px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .studio-footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(5px);
+      display: none;
+      place-items: center;
+      z-index: 9999;
+    }
+    .modal-backdrop.open {
+      display: grid;
+    }
+    .modal-card {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      max-width: 660px;
+      width: 94%;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+    }
+    .modal-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+    .modal-card p {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-actions button {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      white-space: normal;
+      line-height: 1.35;
+      text-align: center;
+      font-size: 0.84rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-field.full {
+      grid-column: 1 / -1;
+    }
+    .form-field label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .chk-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+      color: var(--ink);
+    }
+    .chk-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      text-align: left;
+      margin-bottom: 14px;
+      font-family: Consolas, monospace;
+    }
+    .audit-table th, .audit-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .audit-table th { color: var(--muted); }
+    .diff-viewer-box {
+      background: #0B0A09;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      text-align: left;
+      font-family: Consolas, monospace;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      margin-bottom: 14px;
+      display: none;
+      user-select: text;
+    }
+    .diff-ln { padding: 1px 6px; white-space: pre-wrap; word-break: break-all; }
+    .diff-add { background: rgba(18, 184, 134, 0.16); color: #63E6BE; }
+    .diff-del { background: rgba(250, 82, 82, 0.16); color: #FFA8A8; }
+    .diff-sep { color: var(--muted); text-align: center; padding: 4px 0; }
+  </style>
+</head>
+<body>
+  <div id="splash-screen">
+    <div class="splash-logo">⚡</div>
+    <div class="splash-title">
+      <span>Dry Run Studio</span>
+      <span class="splash-ver">v1.0.0</span>
+    </div>
+    <div class="splash-tagline">Check it on localhost before it goes to cloud.</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+    <div class="splash-meta">
+      <span>© 2026 SRP Hub (srphub.in)</span>
+      <span>•</span>
+      <span>Open-Source MIT License</span>
+    </div>
+  </div>
+
+  <header class="header-shell">
+    <div class="topbar-row1">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <span>Dry Run Studio</span>
+        <span class="brand-sub">Check it on localhost before it goes to cloud</span>
+        <span id="status-badge" class="badge">Ready</span>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" id="tab-local-btn" class="mode-tab active">🧪 Local Dry Run</button>
+        <button type="button" id="tab-deploy-btn" class="mode-tab">☁️ Cloud Deploy</button>
+      </div>
+
+      <div class="row-group">
+        <button type="button" id="git-setup-btn" title="Check Git installation, author identity & GitHub authentication">
+          🔧 Git & Auth Setup
+        </button>
+        <button type="button" id="repo-profile-btn" class="btn-blue" title="Configure GitHub & Cloudflare credentials for the active project">
+          🔐 Project Cloud Profile
+        </button>
+        <button type="button" id="download-md-top-btn" class="btn-md" title="Export full diagnostic report in Markdown format">
+          📥 Export .md Report
+        </button>
+        <button type="button" id="wipe-exit-btn" class="btn-danger" title="Wipe temporary sandbox files and exit application">
+          🔴 Close & Wipe
+        </button>
+      </div>
+    </div>
+
+    <div class="topbar-row2">
+      <div class="row-group">
+        <button type="button" id="sandbox-dir-btn" title="Configure temporary sandbox build location & desktop shortcuts">
+          📁 Sandbox: <span id="sandbox-dir-label">...</span>
+        </button>
+
+        <div id="audit-stats" class="audit-stats" title="Inspect output bundle size breakdown">
+          <span id="stat-time">⏱️ --</span>
+          <span>•</span>
+          <span id="stat-size">📦 -- MB</span>
+        </div>
+
+        <select id="route-select" style="display:none; max-width: 240px;" title="Navigate to built route">
+          <option value="/">/ (Home)</option>
+        </select>
+
+        <div class="vp-group" id="vp-switcher">
+          <button type="button" data-vp="desktop" class="btn-active">🖥️ Desktop</button>
+          <button type="button" data-vp="tablet">📱 Tablet</button>
+          <button type="button" data-vp="mobile">📲 Mobile</button>
+        </div>
+      </div>
+
+      <div class="row-group">
+        <button type="button" id="diff-btn" style="display:none;" title="Inspect modified files compared to Rolling Baseline">
+          📝 0 Changed
+        </button>
+
+        <button type="button" id="runtime-issues-btn" class="btn-warn" style="display:none;">
+          ⚠️ 0 Issues
+        </button>
+
+        <button type="button" id="watch-toggle-btn" title="Automatically rebuild sandbox when source files are saved">
+          👀 Auto-Watch: OFF
+        </button>
+
+        <button type="button" id="clear-storage-btn" style="display:none;" title="Clear preview storage and cache">
+          🧹 Clear Storage
+        </button>
+
+        <button type="button" id="toggle-logs-btn" style="display:none;">📜 Build Console</button>
+        <button type="button" id="rebuild-btn" disabled>🔄 Rebuild Sandbox</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="setup-view">
+    <div class="launcher-grid">
+      <div class="card-box">
+        <div class="section-head">
+          <span>⚡ Registered & Detected Repositories</span>
+          <span id="proj-count-label" style="color: var(--accent);">Scanning...</span>
+        </div>
+        <div class="project-cards" id="project-cards-box"></div>
+      </div>
+
+      <div class="card-box">
+        <div class="section-head">
+          <span>🧲 Add or Select Project Folder</span>
+          <span>100% Read-Only Source</span>
+        </div>
+        <div class="drop-zone" id="drop-zone">
+          <div style="font-weight:800;font-size:0.86rem;">📂 Drag & Drop Any Project Folder Here</div>
+          <div style="font-size:0.74rem;color:var(--muted);">Or click to browse in Windows Explorer</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <span style="font-size: 0.74rem; font-weight: 800; color: var(--muted); text-transform: uppercase;">Active Project:</span>
+      <input type="text" id="source-path-input" placeholder="Select a project card above, drop a folder, or click Browse Folder..." value="" />
+      <button type="button" id="browse-btn">🪟 Browse Folder</button>
+      <button type="button" id="start-build-btn" class="btn-primary" style="padding: 8px 22px;">
+        🚀 Run Local Dry Run Build
+      </button>
+    </div>
+
+    <div class="terminal-header">
+      <span>SANDBOX COMPILER & TELEMETRY CONSOLE</span>
+      <div class="terminal-tools">
+        <button type="button" id="filter-err-btn" style="padding: 4px 10px; font-size: 0.72rem;">🔍 Errors Only: OFF</button>
+        <button type="button" id="copy-md-btn" style="padding: 4px 10px; font-size: 0.72rem;">📋 Copy .md Report</button>
+        <button type="button" id="download-md-btn" class="btn-md" style="padding: 4px 12px; font-size: 0.72rem;">📥 Download .md Report</button>
+      </div>
+    </div>
+
+    <div class="terminal-box" id="terminal-output">
+      <div class="log-line log-info">Dry Run Studio v1.0.0 ready. Select a project repository above to execute an isolated local dry run build.</div>
+    </div>
+  </main>
+
+  <section id="deploy-view">
+    <div class="cloud-config-bar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.73rem; font-weight: 800; color: var(--muted); text-transform: uppercase;">Repository:</span>
+        <select id="deploy-repo-select" style="flex: 1;"></select>
+        <button type="button" id="refresh-git-btn" title="Refresh repository status">🔄</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.73rem; font-weight: 800; color: var(--muted); text-transform: uppercase;">Commit:</span>
+        <input type="text" id="git-commit-input" value="Update and deploy" placeholder="Enter commit message..." />
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span id="git-branch-badge" class="badge">Branch: --</span>
+        <button type="button" id="edit-repo-cloud-btn" class="btn-blue">⚙️ Repo Cloud Settings</button>
+      </div>
+    </div>
+
+    <div class="cloud-action-dock">
+      <button type="button" id="git-push-btn" class="dock-pill-btn dock-git-btn">
+        🐙 Push to GitHub Only
+      </button>
+
+      <button type="button" id="cf-watch-btn" class="dock-pill-btn dock-cf-btn">
+        ☁️ Track Cloudflare Build
+      </button>
+
+      <button type="button" id="push-and-track-btn" class="dock-pill-btn dock-combo-btn">
+        ⚡ 1-Click: Git Push + Cloudflare Deploy
+      </button>
+    </div>
+
+    <div class="cf-status-bar">
+      <div id="git-status-summary" style="font-size: 0.76rem; color: var(--muted); font-family: Consolas, monospace;">
+        Select a repository to view uncommitted changes and cloud profile status.
+      </div>
+
+      <div class="cf-stage-strip" id="cf-stage-strip">
+        <span style="font-size: 0.75rem; color: var(--muted);" id="cf-timer-label">⏱️ 00:00 — Idle</span>
+      </div>
+
+      <div class="row-group">
+        <button type="button" id="git-retry-lock-btn" class="btn-warn" style="display:none;">
+          🔓 Clean Git Lock & Retry
+        </button>
+        <button type="button" id="cf-retry-btn" class="btn-warn" style="display:none;">
+          🔄 Retry Cloudflare Build
+        </button>
+        <button type="button" id="cf-dash-btn">
+          ↗ Open Cloudflare Dashboard
+        </button>
+      </div>
+    </div>
+
+    <div class="terminal-header">
+      <span>CLOUD DEPLOYMENT & BUILD STREAM (AUTO-PROMOTES BASELINE ON SUCCESS)</span>
+      <div class="terminal-tools">
+        <button type="button" id="deploy-dl-md-btn" class="btn-md" style="padding: 4px 12px; font-size: 0.72rem;">
+          📥 Export Deployment Log (.md)
+        </button>
+      </div>
+    </div>
+
+    <div class="terminal-box" id="deploy-terminal-output">
+      <div class="log-line log-info">Cloud Deployment Console ready. Successful deployments automatically update your Rolling Baseline.</div>
+    </div>
+  </section>
+
+  <section id="preview-view">
+    <div id="iframe-shell">
+      <iframe id="preview-iframe" title="Dry Run Sandbox Preview"></iframe>
+    </div>
+  </section>
+
+  <footer class="studio-footer">
+    <div>
+      <strong>Dry Run Studio v1.0.0</strong> — Check it on localhost before it goes to cloud.
+    </div>
+    <div>
+      © 2026 <a href="https://srphub.in" target="_blank" rel="noopener">SRP Hub (srphub.in)</a> • Open-Source MIT License •
+      <a href="#" id="open-license-link">About & License</a>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="sandbox-setup-modal">
+    <div class="modal-card" style="max-width: 580px;">
+      <h3>⚡ Welcome to Dry Run Studio v1.0.0</h3>
+      <p>
+        Choose your isolated <strong>Sandbox Workspace Folder</strong>. All temporary builds, rolling baselines, and package caches run inside this folder and wipe clean on exit—leaving your source repositories 100% untouched:
+      </p>
+      <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <input type="text" id="setup-sandbox-input" value="" />
+        <button type="button" id="setup-browse-sandbox-btn">🪟 Browse...</button>
+      </div>
+
+      <div class="chk-row">
+        <label><input type="checkbox" id="chk-desktop-shortcut" checked /> Create Desktop Shortcut</label>
+        <label><input type="checkbox" id="chk-startmenu-shortcut" checked /> Add to Windows Start Menu</label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="save-sandbox-path-btn" class="btn-primary">
+          ✅ Save Workspace & Create Shortcuts
+        </button>
+        <button type="button" id="use-default-docs-btn">
+          📂 Use Default Documents Folder
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="git-setup-modal">
+    <div class="modal-card" style="max-width: 580px;">
+      <h3>🔧 Git & GitHub Readiness Setup</h3>
+      <p id="git-env-status-line">
+        Checking Git installation and author identity on this PC...
+      </p>
+
+      <div id="git-missing-box" style="display:none; margin-bottom: 16px;">
+        <button type="button" id="install-git-winget-btn" class="btn-primary" style="width:100%;justify-content:center;padding:12px;">
+          ⚡ Auto-Install Official Git for Windows (via Winget)
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Global Git Author Name</label>
+          <input type="text" id="git-author-name" placeholder="e.g., SRP Hub" />
+        </div>
+        <div class="form-field">
+          <label>Global Git Author Email</label>
+          <input type="text" id="git-author-email" placeholder="e.g., dev@srphub.in" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" id="save-git-author-btn" class="btn-primary" style="flex: 1; justify-content: center; padding: 11px;">
+          💾 Save Git Author Identity
+        </button>
+        <button type="button" id="close-git-setup-btn" style="padding: 11px 20px;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="repo-profile-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <h3>🔐 Encrypted Project Cloud Profile</h3>
+      <p>
+        Protected via Windows DPAPI encryption on this PC. Switching to this repository automatically loads its isolated GitHub and Cloudflare settings:
+      </p>
+
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>Repository Local Path</label>
+          <input type="text" id="prof-repo-path" readonly style="opacity: 0.75;" />
+        </div>
+
+        <div class="form-field">
+          <label>Git Remote Name</label>
+          <input type="text" id="prof-git-remote" placeholder="origin" value="origin" />
+        </div>
+
+        <div class="form-field">
+          <label>Git Branch</label>
+          <input type="text" id="prof-git-branch" placeholder="main" value="main" />
+        </div>
+
+        <div class="form-field full">
+          <label>GitHub Remote Repository URL</label>
+          <input type="text" id="prof-git-url" placeholder="https://github.com/username/repository.git" />
+        </div>
+
+        <div class="form-field full">
+          <label>GitHub Personal Access Token (Optional — Leave blank if using Git Credential Manager)</label>
+          <input type="password" id="prof-git-pat" placeholder="Optional ghp_... token (DPAPI Encrypted)" />
+        </div>
+
+        <div class="form-field">
+          <label>Cloudflare Account ID</label>
+          <input type="text" id="prof-cf-acc" placeholder="32-character Cloudflare Account ID" />
+        </div>
+
+        <div class="form-field">
+          <label>Cloudflare Pages Project Name</label>
+          <input type="text" id="prof-cf-proj" placeholder="e.g., my-web-project" />
+        </div>
+
+        <div class="form-field full">
+          <label>Cloudflare API Token (DPAPI Encrypted)</label>
+          <input type="password" id="prof-cf-token" placeholder="Paste Cloudflare API Token (Leave blank to keep saved token)" />
+        </div>
+
+        <div class="form-field full">
+          <label>Custom Sandbox / History Folder Override (Optional)</label>
+          <input type="text" id="prof-sandbox-override" placeholder="Leave blank to use global Sandbox folder" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" id="save-repo-profile-btn" class="btn-primary" style="flex: 1; justify-content: center; padding: 11px;">
+          💾 Encrypt & Save Project Profile
+        </button>
+        <button type="button" id="close-repo-profile-btn" style="padding: 11px 20px;">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="bundle-modal">
+    <div class="modal-card">
+      <h3>📦 Output Bundle Breakdown</h3>
+      <p id="bundle-summary-line">Asset category sizes and largest files:</p>
+      <div style="max-height: 310px; overflow-y: auto; margin-bottom: 14px;">
+        <table class="audit-table" id="bundle-table">
+          <thead>
+            <tr><th>#</th><th>File Path</th><th>Size</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button type="button" id="close-bundle-btn" style="width: 100%; justify-content: center; padding: 10px;">Close</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="diff-modal">
+    <div class="modal-card">
+      <h3>📝 Rolling Baseline Comparison</h3>
+      <p>Files modified since the last saved baseline (automatically updated upon successful cloud deployment):</p>
+      <div style="max-height: 210px; overflow-y: auto; margin-bottom: 12px;">
+        <table class="audit-table" id="diff-table">
+          <thead>
+            <tr><th>Status</th><th>File Path</th><th>Size</th><th>Inspect</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="diff-viewer-box" id="diff-viewer-box"></div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="pin-baseline-btn" class="btn-md" style="flex: 1; justify-content: center; padding: 10px;">
+          📌 Set Current Build as New Baseline
+        </button>
+        <button type="button" id="close-diff-btn" style="flex: 1; justify-content: center; padding: 10px;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="license-modal">
+    <div class="modal-card" style="max-width: 560px;">
+      <h3>⚡ Dry Run Studio v1.0.0</h3>
+      <p style="margin-bottom: 10px; color: var(--ink); font-weight: 700;">
+        Check it on localhost before it goes to cloud.
+      </p>
+      <div style="background:#0C0B0A;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:left;font-family:Consolas,monospace;font-size:0.75rem;color:var(--muted);line-height:1.5;margin-bottom:16px;">
+        MIT License<br/><br/>
+        Copyright (c) 2026 SRP Hub (https://srphub.in)<br/><br/>
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
+      </div>
+      <button type="button" id="close-license-btn" class="btn-primary" style="width:100%;justify-content:center;padding:10px;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="confirm-modal">
+    <div class="modal-card" style="max-width: 560px;">
+      <h3>Wipe Sandbox & Exit Studio?</h3>
+      <p>
+        Choose how to clean up <strong id="wipe-target-name" style="color: var(--ink);">Sandbox</strong>. Your source repositories remain untouched:
+      </p>
+      <div class="modal-actions">
+        <button type="button" id="confirm-fast-wipe-btn" class="btn-primary">
+          ⚡ Wipe Ephemeral Build & Exit (Saves Rolling Baseline & Keeps Package Cache)
+        </button>
+        <button type="button" id="confirm-full-wipe-btn" class="btn-danger">
+          🗑️ Complete Sandbox Reset & Exit (Deletes All Baselines & Package Caches)
+        </button>
+        <button type="button" id="cancel-wipe-btn">
+          Cancel — Return to Studio
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      window.moveTo(0, 0);
+      window.resizeTo(screen.availWidth, screen.availHeight);
+    } catch (e) {}
+
+    setTimeout(() => {
+      const sp = document.getElementById('splash-screen');
+      if (sp) sp.classList.add('hidden');
+    }, 3150);
+
+    const tabLocalBtn = document.getElementById('tab-local-btn');
+    const tabDeployBtn = document.getElementById('tab-deploy-btn');
+    const setupView = document.getElementById('setup-view');
+    const deployView = document.getElementById('deploy-view');
+    const previewView = document.getElementById('preview-view');
+
+    const sandboxDirBtn = document.getElementById('sandbox-dir-btn');
+    const sandboxDirLabel = document.getElementById('sandbox-dir-label');
+    const wipeTargetName = document.getElementById('wipe-target-name');
+    const sandboxSetupModal = document.getElementById('sandbox-setup-modal');
+    const setupSandboxInput = document.getElementById('setup-sandbox-input');
+    const setupBrowseSandboxBtn = document.getElementById('setup-browse-sandbox-btn');
+    const chkDesktopShortcut = document.getElementById('chk-desktop-shortcut');
+    const chkStartmenuShortcut = document.getElementById('chk-startmenu-shortcut');
+    const saveSandboxPathBtn = document.getElementById('save-sandbox-path-btn');
+    const useDefaultDocsBtn = document.getElementById('use-default-docs-btn');
+
+    const gitSetupBtn = document.getElementById('git-setup-btn');
+    const gitSetupModal = document.getElementById('git-setup-modal');
+    const gitEnvStatusLine = document.getElementById('git-env-status-line');
+    const gitMissingBox = document.getElementById('git-missing-box');
+    const installGitWingetBtn = document.getElementById('install-git-winget-btn');
+    const gitAuthorName = document.getElementById('git-author-name');
+    const gitAuthorEmail = document.getElementById('git-author-email');
+    const saveGitAuthorBtn = document.getElementById('save-git-author-btn');
+    const closeGitSetupBtn = document.getElementById('close-git-setup-btn');
+
+    const openLicenseLink = document.getElementById('open-license-link');
+    const licenseModal = document.getElementById('license-modal');
+    const closeLicenseBtn = document.getElementById('close-license-btn');
+
+    const srcInput = document.getElementById('source-path-input');
+    const browseBtn = document.getElementById('browse-btn');
+    const dropZone = document.getElementById('drop-zone');
+    const projectCardsBox = document.getElementById('project-cards-box');
+    const projCountLabel = document.getElementById('proj-count-label');
+    const startBuildBtn = document.getElementById('start-build-btn');
+    const rebuildBtn = document.getElementById('rebuild-btn');
+    const toggleLogsBtn = document.getElementById('toggle-logs-btn');
+    const clearStorageBtn = document.getElementById('clear-storage-btn');
+    const watchToggleBtn = document.getElementById('watch-toggle-btn');
+    const diffBtn = document.getElementById('diff-btn');
+    const runtimeIssuesBtn = document.getElementById('runtime-issues-btn');
+    const routeSelect = document.getElementById('route-select');
+    const vpSwitcher = document.getElementById('vp-switcher');
+    const iframeShell = document.getElementById('iframe-shell');
+    const auditStats = document.getElementById('audit-stats');
+    const statTime = document.getElementById('stat-time');
+    const statSize = document.getElementById('stat-size');
+    const filterErrBtn = document.getElementById('filter-err-btn');
+    const copyMdBtn = document.getElementById('copy-md-btn');
+    const downloadMdBtn = document.getElementById('download-md-btn');
+    const downloadMdTopBtn = document.getElementById('download-md-top-btn');
+    const deployDlMdBtn = document.getElementById('deploy-dl-md-btn');
+    const wipeExitBtn = document.getElementById('wipe-exit-btn');
+    const terminal = document.getElementById('terminal-output');
+    const deployTerminal = document.getElementById('deploy-terminal-output');
+    const statusBadge = document.getElementById('status-badge');
+    const previewIframe = document.getElementById('preview-iframe');
+    const confirmModal = document.getElementById('confirm-modal');
+    const cancelWipeBtn = document.getElementById('cancel-wipe-btn');
+    const confirmFastWipeBtn = document.getElementById('confirm-fast-wipe-btn');
+    const confirmFullWipeBtn = document.getElementById('confirm-full-wipe-btn');
+    const bundleModal = document.getElementById('bundle-modal');
+    const bundleSummaryLine = document.getElementById('bundle-summary-line');
+    const bundleTableBody = document.querySelector('#bundle-table tbody');
+    const closeBundleBtn = document.getElementById('close-bundle-btn');
+    const diffModal = document.getElementById('diff-modal');
+    const diffTableBody = document.querySelector('#diff-table tbody');
+    const diffViewerBox = document.getElementById('diff-viewer-box');
+    const pinBaselineBtn = document.getElementById('pin-baseline-btn');
+    const closeDiffBtn = document.getElementById('close-diff-btn');
+
+    const repoProfileBtn = document.getElementById('repo-profile-btn');
+    const editRepoCloudBtn = document.getElementById('edit-repo-cloud-btn');
+    const repoProfileModal = document.getElementById('repo-profile-modal');
+    const profRepoPath = document.getElementById('prof-repo-path');
+    const profGitRemote = document.getElementById('prof-git-remote');
+    const profGitBranch = document.getElementById('prof-git-branch');
+    const profGitUrl = document.getElementById('prof-git-url');
+    const profGitPat = document.getElementById('prof-git-pat');
+    const profCfAcc = document.getElementById('prof-cf-acc');
+    const profCfProj = document.getElementById('prof-cf-proj');
+    const profCfToken = document.getElementById('prof-cf-token');
+    const profSandboxOverride = document.getElementById('prof-sandbox-override');
+    const saveRepoProfileBtn = document.getElementById('save-repo-profile-btn');
+    const closeRepoProfileBtn = document.getElementById('close-repo-profile-btn');
+
+    const deployRepoSelect = document.getElementById('deploy-repo-select');
+    const gitBranchBadge = document.getElementById('git-branch-badge');
+    const refreshGitBtn = document.getElementById('refresh-git-btn');
+    const gitCommitInput = document.getElementById('git-commit-input');
+    const gitPushBtn = document.getElementById('git-push-btn');
+    const gitRetryLockBtn = document.getElementById('git-retry-lock-btn');
+    const gitStatusSummary = document.getElementById('git-status-summary');
+    const cfWatchBtn = document.getElementById('cf-watch-btn');
+    const cfRetryBtn = document.getElementById('cf-retry-btn');
+    const cfDashBtn = document.getElementById('cf-dash-btn');
+    const cfStageStrip = document.getElementById('cf-stage-strip');
+    const pushAndTrackBtn = document.getElementById('push-and-track-btn');
+
+    let basePreviewUrl = '';
+    let activeTab = 'local';
+    let showingLogs = true;
+    let isWipingNow = false;
+    let watchEnabled = false;
+    let errorsOnlyFilter = false;
+    let discoveredProjects = [];
+    let latestAudit = null;
+    let runtimeIssueCount = 0;
+    let activeRepoProfile = null;
+    let lastFailedCfDeploymentId = '';
+    let defaultDocsFallback = '';
+
+    fetch('/api/init')
+      .then(r => r.json())
+      .then(data => {
+        discoveredProjects = data.projects || [];
+        projCountLabel.textContent = discoveredProjects.length + ' Available';
+        defaultDocsFallback = data.defaultDocsSandbox || '';
+        updateSandboxLabels(data.globalSettings.sandboxBaseDir);
+
+        if (data.globalSettings.lastActiveRepoPath) {
+          srcInput.value = data.globalSettings.lastActiveRepoPath;
+          rebuildBtn.disabled = false;
+        }
+
+        if (!data.globalSettings.firstTimeSetupDone) {
+          setupSandboxInput.value = data.globalSettings.sandboxBaseDir;
+          sandboxSetupModal.classList.add('open');
+        }
+
+        if (data.gitEnv) {
+          updateGitSetupUI(data.gitEnv);
+        }
+
+        renderProjectCards();
+        populateDeployRepoDropdown();
+      });
+
+    function updateSandboxLabels(dirPath) {
+      sandboxDirLabel.textContent = dirPath;
+      wipeTargetName.textContent = dirPath;
+      setupSandboxInput.value = dirPath;
+    }
+
+    function updateGitSetupUI(gitEnv) {
+      if (!gitEnv.gitInstalled) {
+        gitEnvStatusLine.innerHTML = '<span style="color:var(--red);font-weight:700;">❌ Git is not installed on this PC.</span> Click below to install official Git for Windows automatically:';
+        gitMissingBox.style.display = 'block';
+        gitSetupBtn.classList.add('btn-warn');
+      } else {
+        gitMissingBox.style.display = 'none';
+        gitAuthorName.value = gitEnv.userName || '';
+        gitAuthorEmail.value = gitEnv.userEmail || '';
+        if (!gitEnv.userName || !gitEnv.userEmail) {
+          gitEnvStatusLine.innerHTML = '<span style="color:var(--yellow);font-weight:700;">⚠️ Git v' + gitEnv.version + ' detected, but Author Identity is not set.</span> Enter your name and email below for Git commits:';
+          gitSetupBtn.classList.add('btn-warn');
+        } else {
+          gitEnvStatusLine.innerHTML = '<span style="color:var(--green);font-weight:700;">✅ Git v' + gitEnv.version + ' Ready</span> — Author: <code>' + gitEnv.userName + ' &lt;' + gitEnv.userEmail + '&gt;</code>';
+          gitSetupBtn.classList.remove('btn-warn');
+        }
+      }
+    }
+
+    openLicenseLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      licenseModal.classList.add('open');
+    });
+    closeLicenseBtn.addEventListener('click', () => licenseModal.classList.remove('open'));
+
+    gitSetupBtn.addEventListener('click', async () => {
+      const env = await fetch('/api/git-env').then(r => r.json()).catch(() => ({ gitInstalled: false }));
+      updateGitSetupUI(env);
+      gitSetupModal.classList.add('open');
+    });
+    closeGitSetupBtn.addEventListener('click', () => gitSetupModal.classList.remove('open'));
+
+    installGitWingetBtn.addEventListener('click', async () => {
+      installGitWingetBtn.disabled = true;
+      installGitWingetBtn.textContent = 'Installing Git via Winget (Check Console)...';
+      await fetch('/api/git-install', { method: 'POST' });
+    });
+
+    saveGitAuthorBtn.addEventListener('click', async () => {
+      const res = await fetch('/api/git-config-author', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName: gitAuthorName.value.trim(),
+          userEmail: gitAuthorEmail.value.trim()
+        })
+      }).then(r => r.json());
+      if (!res.ok) {
+        alert(res.error || 'Failed to save Git author');
+        return;
+      }
+      updateGitSetupUI(res.status);
+      gitSetupModal.classList.remove('open');
+    });
+
+    tabLocalBtn.addEventListener('click', () => {
+      activeTab = 'local';
+      tabLocalBtn.classList.add('active');
+      tabDeployBtn.classList.remove('active');
+      deployView.style.display = 'none';
+      if (basePreviewUrl && !showingLogs) {
+        previewView.style.display = 'flex';
+        setupView.style.display = 'none';
+      } else {
+        setupView.style.display = 'flex';
+        previewView.style.display = 'none';
+      }
+    });
+
+    tabDeployBtn.addEventListener('click', () => {
+      activeTab = 'deploy';
+      tabDeployBtn.classList.add('active');
+      tabLocalBtn.classList.remove('active');
+      setupView.style.display = 'none';
+      previewView.style.display = 'none';
+      deployView.style.display = 'flex';
+      if (srcInput.value.trim()) {
+        deployRepoSelect.value = srcInput.value.trim();
+      }
+      inspectSelectedDeployRepo();
+    });
+
+    sandboxDirBtn.addEventListener('click', () => {
+      sandboxSetupModal.classList.add('open');
+    });
+
+    setupBrowseSandboxBtn.addEventListener('click', async () => {
+      const res = await fetch('/api/pick-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPath: setupSandboxInput.value, title: 'Select Sandbox Workspace Directory' })
+      }).then(r => r.json()).catch(() => ({}));
+      if (res.selectedPath) setupSandboxInput.value = res.selectedPath;
+    });
+
+    async function saveSandboxLocation(targetPath) {
+      const res = await fetch('/api/config-sandbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sandboxBaseDir: targetPath,
+          createDesktopShortcut: chkDesktopShortcut.checked,
+          createStartMenuShortcut: chkStartmenuShortcut.checked
+        })
+      }).then(r => r.json());
+      if (!res.ok) {
+        alert(res.error || 'Invalid sandbox path');
+        return;
+      }
+      updateSandboxLabels(res.sandboxBaseDir);
+      sandboxSetupModal.classList.remove('open');
+    }
+
+    saveSandboxPathBtn.addEventListener('click', () => saveSandboxLocation(setupSandboxInput.value));
+    useDefaultDocsBtn.addEventListener('click', () => saveSandboxLocation(defaultDocsFallback));
+
+    function renderProjectCards() {
+      projectCardsBox.innerHTML = '';
+      if (discoveredProjects.length === 0) {
+        projectCardsBox.innerHTML = '<div style="color:var(--muted);font-size:0.78rem;padding:8px;">No repositories registered yet. Drop a project folder or click Browse Folder.</div>';
+        return;
+      }
+
+      discoveredProjects.forEach((proj) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'proj-card' + (srcInput.value === proj.fullPath ? ' selected' : '');
+        let tagsHtml = '<span class="mini-tag">v' + proj.version + '</span>';
+        if (proj.hasRollingBaseline) tagsHtml += '<span class="mini-tag">📌 Baseline</span>';
+        if (proj.hasCloudProfile) tagsHtml += '<span class="mini-tag">☁️ Cloud Linked</span>';
+
+        card.innerHTML =
+          '<div class="proj-card-top">' +
+            '<span class="proj-title">' + proj.folderName + '</span>' +
+            '<span class="proj-fw">' + proj.framework + '</span>' +
+          '</div>' +
+          '<div class="proj-sub">' + tagsHtml + '</div>';
+
+        card.addEventListener('click', () => {
+          srcInput.value = proj.fullPath;
+          rebuildBtn.disabled = false;
+          renderProjectCards();
+          populateDeployRepoDropdown();
+          triggerBuild(false);
+        });
+
+        projectCardsBox.appendChild(card);
+      });
+    }
+
+    function populateDeployRepoDropdown() {
+      const cur = srcInput.value.trim();
+      deployRepoSelect.innerHTML = '';
+      const list = [...discoveredProjects];
+      if (cur && !list.some(p => p.fullPath.toLowerCase() === cur.toLowerCase())) {
+        list.unshift({ folderName: cur.split(/[\\\\/]/).pop(), fullPath: cur });
+      }
+      list.forEach((proj) => {
+        const opt = document.createElement('option');
+        opt.value = proj.fullPath;
+        opt.textContent = proj.folderName + ' — ' + proj.fullPath;
+        deployRepoSelect.appendChild(opt);
+      });
+      if (cur) deployRepoSelect.value = cur;
+    }
+
+    async function openRepoProfileModal() {
+      const targetRepo = (activeTab === 'deploy' ? deployRepoSelect.value : srcInput.value.trim()) || srcInput.value.trim();
+      if (!targetRepo) {
+        alert('Please select a project repository first.');
+        return;
+      }
+      const data = await fetch('/api/git-inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoDir: targetRepo })
+      }).then(r => r.json()).catch(() => ({}));
+
+      const prof = data.profile || {};
+      activeRepoProfile = prof;
+      profRepoPath.value = prof.repoPath || targetRepo;
+      profGitRemote.value = prof.gitRemoteName || 'origin';
+      profGitBranch.value = prof.gitBranch || data.branch || 'main';
+      profGitUrl.value = prof.gitRemoteUrl || '';
+      profGitPat.value = '';
+      profGitPat.placeholder = prof.hasGitPat
+        ? '•••••••• (Encrypted GitHub PAT Saved — Leave blank to keep)'
+        : 'Optional ghp_... token (Leave blank if using Git Credential Manager)';
+      profCfAcc.value = prof.cfAccountId || '';
+      profCfProj.value = prof.cfProjectName || targetRepo.split(/[\\\\/]/).pop();
+      profCfToken.value = '';
+      profCfToken.placeholder = prof.hasCfCredentials
+        ? '•••••••• (Encrypted Cloudflare Token Saved — Leave blank to keep)'
+        : 'Paste Cloudflare API Token for this repository';
+      profSandboxOverride.value = prof.sandboxOverrideDir || '';
+
+      repoProfileModal.classList.add('open');
+    }
+
+    repoProfileBtn.addEventListener('click', openRepoProfileModal);
+    editRepoCloudBtn.addEventListener('click', openRepoProfileModal);
+    closeRepoProfileBtn.addEventListener('click', () => repoProfileModal.classList.remove('open'));
+
+    saveRepoProfileBtn.addEventListener('click', async () => {
+      const repoPath = profRepoPath.value.trim();
+      if (!repoPath) return;
+      saveRepoProfileBtn.disabled = true;
+      saveRepoProfileBtn.textContent = 'Encrypting & Saving...';
+      const res = await fetch('/api/repo-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoPath,
+          gitRemoteName: profGitRemote.value.trim() || 'origin',
+          gitBranch: profGitBranch.value.trim() || 'main',
+          gitRemoteUrl: profGitUrl.value.trim(),
+          gitPatToken: profGitPat.value.trim() ? profGitPat.value.trim() : undefined,
+          cfAccountId: profCfAcc.value.trim(),
+          cfProjectName: profCfProj.value.trim(),
+          cfApiToken: profCfToken.value.trim() ? profCfToken.value.trim() : undefined,
+          sandboxOverrideDir: profSandboxOverride.value.trim()
+        })
+      }).then(r => r.json()).catch(() => ({ ok: false }));
+      saveRepoProfileBtn.disabled = false;
+      saveRepoProfileBtn.textContent = '💾 Encrypt & Save Project Profile';
+
+      if (res.ok) {
+        activeRepoProfile = res.profile;
+        repoProfileModal.classList.remove('open');
+        inspectSelectedDeployRepo();
+        fetch('/api/projects').then(r => r.json()).then(d => {
+          discoveredProjects = d.projects || [];
+          renderProjectCards();
+        });
+      }
+    });
+
+    async function inspectSelectedDeployRepo() {
+      const repoDir = deployRepoSelect.value || srcInput.value.trim();
+      if (!repoDir) return;
+      srcInput.value = repoDir;
+
+      const data = await fetch('/api/git-inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoDir })
+      }).then(r => r.json()).catch(() => ({ isGit: false }));
+
+      if (data.gitEnv) updateGitSetupUI(data.gitEnv);
+      activeRepoProfile = data.profile || null;
+      const cfBadge = activeRepoProfile && activeRepoProfile.hasCfCredentials
+        ? ' • ☁️ Cloudflare Linked (' + activeRepoProfile.cfProjectName + ')'
+        : ' • ⚠️ Cloudflare Token Not Set';
+
+      if (!data.isGit) {
+        gitBranchBadge.textContent = 'No Git';
+        gitStatusSummary.textContent = (data.error || 'Not a Git repository.') + cfBadge;
+        gitRetryLockBtn.style.display = 'none';
+        return;
+      }
+
+      gitBranchBadge.textContent = '🌿 ' + (activeRepoProfile?.gitBranch || data.branch || 'main');
+      gitRetryLockBtn.style.display = data.hasLockFile ? 'inline-flex' : 'none';
+
+      const count = data.changedFiles ? data.changedFiles.length : 0;
+      if (count === 0) {
+        gitStatusSummary.innerHTML = '<span style="color:var(--green);">✅ Working tree clean</span>' + cfBadge;
+      } else {
+        const sample = data.changedFiles.slice(0, 4).map(f => f.code + ' ' + f.file).join(', ');
+        gitStatusSummary.innerHTML = '<span style="color:var(--yellow);">📝 ' + count + ' modified file(s):</span> ' + sample + (count > 4 ? ' ...' : '') + cfBadge;
+      }
+    }
+
+    deployRepoSelect.addEventListener('change', inspectSelectedDeployRepo);
+    refreshGitBtn.addEventListener('click', inspectSelectedDeployRepo);
+
+    async function runGitPush(cleanLockFirst = false, autoPromoteBaseline = true) {
+      const repoDir = deployRepoSelect.value || srcInput.value.trim();
+      if (!repoDir) return false;
+      gitPushBtn.disabled = true;
+      pushAndTrackBtn.disabled = true;
+      const res = await fetch('/api/git-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoDir,
+          remoteName: activeRepoProfile?.gitRemoteName || 'origin',
+          remoteUrl: activeRepoProfile?.gitRemoteUrl || '',
+          branch: activeRepoProfile?.gitBranch || '',
+          commitMessage: gitCommitInput.value || 'Update and deploy',
+          cleanLockFirst,
+          autoPromoteBaseline
+        })
+      }).then(r => r.json()).catch(e => ({ ok: false, error: e.message }));
+      gitPushBtn.disabled = false;
+      pushAndTrackBtn.disabled = false;
+      inspectSelectedDeployRepo();
+      if (!res.ok) {
+        if (res.error && res.error.includes('Git & Auth Setup')) {
+          gitSetupBtn.click();
+        } else {
+          gitRetryLockBtn.style.display = 'inline-flex';
+        }
+      }
+      return Boolean(res.ok);
+    }
+
+    gitPushBtn.addEventListener('click', () => runGitPush(false, true));
+    gitRetryLockBtn.addEventListener('click', () => runGitPush(true, true));
+
+    async function startCfTracking() {
+      const repoDir = deployRepoSelect.value || srcInput.value.trim();
+      if (!repoDir) return;
+      cfRetryBtn.style.display = 'none';
+      const res = await fetch('/api/cf-watch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoDir })
+      }).then(r => r.json());
+      if (!res.ok) {
+        openRepoProfileModal();
+      }
+    }
+
+    cfWatchBtn.addEventListener('click', startCfTracking);
+
+    pushAndTrackBtn.addEventListener('click', async () => {
+      const repoDir = deployRepoSelect.value || srcInput.value.trim();
+      if (!repoDir) return;
+      if (!activeRepoProfile || !activeRepoProfile.hasCfCredentials) {
+        openRepoProfileModal();
+        return;
+      }
+      deployTerminal.innerHTML = '';
+      const pushed = await runGitPush(false, false);
+      if (pushed) {
+        setTimeout(startCfTracking, 1200);
+      }
+    });
+
+    cfRetryBtn.addEventListener('click', async () => {
+      const repoDir = deployRepoSelect.value || srcInput.value.trim();
+      if (!lastFailedCfDeploymentId || !repoDir) return;
+      cfRetryBtn.disabled = true;
+      cfRetryBtn.textContent = 'Retrying Build...';
+      const res = await fetch('/api/cf-retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoDir,
+          deploymentId: lastFailedCfDeploymentId
+        })
+      }).then(r => r.json()).catch(() => ({ ok: false }));
+      cfRetryBtn.disabled = false;
+      cfRetryBtn.textContent = '🔄 Retry Cloudflare Build';
+      if (res.ok) {
+        startCfTracking();
+      }
+    });
+
+    cfDashBtn.addEventListener('click', () => {
+      const acc = activeRepoProfile?.cfAccountId || '';
+      const proj = activeRepoProfile?.cfProjectName || '';
+      const url = acc && proj
+        ? 'https://dash.cloudflare.com/' + acc + '/pages/view/' + proj
+        : 'https://dash.cloudflare.com/';
+      window.open(url, '_blank');
+    });
+
+    function applyLogFilter() {
+      const lines = terminal.querySelectorAll('.log-line');
+      lines.forEach((line) => {
+        if (!errorsOnlyFilter) {
+          line.style.display = '';
+        } else {
+          const isErr = line.classList.contains('log-stderr') || line.classList.contains('log-error');
+          line.style.display = isErr ? '' : 'none';
+        }
+      });
+    }
+
+    const evtSource = new EventSource('/api/logs');
+    evtSource.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      const div = document.createElement('div');
+      const lType = data.type || 'stdout';
+      div.className = 'log-line log-' + lType;
+      div.textContent = '[' + data.ts + '] ' + data.text;
+
+      if (data.channel === 'deploy') {
+        deployTerminal.appendChild(div);
+        deployTerminal.scrollTop = deployTerminal.scrollHeight;
+      } else {
+        if (errorsOnlyFilter && lType !== 'stderr' && lType !== 'error') {
+          div.style.display = 'none';
+        }
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+    };
+
+    evtSource.addEventListener('status', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.state === 'building') {
+        runtimeIssueCount = 0;
+        runtimeIssuesBtn.style.display = 'none';
+        statusBadge.textContent = 'Running Dry Run...';
+        statusBadge.className = 'badge';
+        startBuildBtn.disabled = true;
+        rebuildBtn.disabled = true;
+        if (data.repoProfile) activeRepoProfile = data.repoProfile;
+        if (activeTab === 'local') {
+          setupView.style.display = 'flex';
+          previewView.style.display = 'none';
+          showingLogs = true;
+        }
+      } else if (data.state === 'ready') {
+        statusBadge.textContent = '🟢 ' + (data.projectName || 'Live Preview');
+        statusBadge.className = 'badge live';
+        startBuildBtn.disabled = false;
+        rebuildBtn.disabled = false;
+        toggleLogsBtn.style.display = 'inline-flex';
+        clearStorageBtn.style.display = 'inline-flex';
+        diffBtn.style.display = 'inline-flex';
+        diffBtn.textContent = '📝 ' + (data.changedCount || 0) + ' Changed';
+        vpSwitcher.style.display = 'inline-flex';
+        routeSelect.style.display = 'inline-flex';
+
+        if (data.repoProfile) activeRepoProfile = data.repoProfile;
+
+        const brokenLinksCount = data.smokeTest && data.smokeTest.brokenLinks ? data.smokeTest.brokenLinks.length : 0;
+        if (brokenLinksCount > 0 || (data.preflightCount && data.preflightCount > 0)) {
+          const totalWarn = brokenLinksCount + (data.preflightCount || 0);
+          runtimeIssuesBtn.textContent = '⚠️ ' + totalWarn + ' Alert(s)';
+          runtimeIssuesBtn.style.display = 'inline-flex';
+        }
+
+        if (data.audit) {
+          latestAudit = data.audit;
+          auditStats.style.display = 'inline-flex';
+          statTime.textContent = '⏱️ ' + data.durationSec + 's';
+          statSize.textContent = '📦 ' + data.audit.totalMB + ' MB (' + data.audit.routes.length + ' routes)';
+
+          routeSelect.innerHTML = '';
+          data.audit.routes.forEach((r) => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r === '/' ? '/ (Home)' : r;
+            routeSelect.appendChild(opt);
+          });
+        }
+
+        basePreviewUrl = data.previewUrl;
+        previewIframe.src = basePreviewUrl + '/?t=' + Date.now();
+        if (activeTab === 'local') {
+          setupView.style.display = 'none';
+          previewView.style.display = 'flex';
+          showingLogs = false;
+          toggleLogsBtn.classList.remove('btn-active');
+        }
+      } else if (data.state === 'baseline-promoted') {
+        diffBtn.textContent = '📝 0 Changed';
+      } else if (data.state === 'error') {
+        statusBadge.textContent = 'Build Error';
+        statusBadge.className = 'badge';
+        startBuildBtn.disabled = false;
+        rebuildBtn.disabled = false;
+        if (activeTab === 'local') {
+          setupView.style.display = 'flex';
+          previewView.style.display = 'none';
+          showingLogs = true;
+        }
+      } else if (data.state === 'runtime-issue') {
+        runtimeIssueCount = data.count || (runtimeIssueCount + 1);
+        runtimeIssuesBtn.textContent = '⚠️ ' + runtimeIssueCount + (runtimeIssueCount === 1 ? ' Issue' : ' Issues');
+        runtimeIssuesBtn.style.display = 'inline-flex';
+      } else if (data.state === 'cf-progress') {
+        cfStageStrip.innerHTML = '';
+        const timerSpan = document.createElement('span');
+        timerSpan.style.cssText = 'font-size:0.76rem;font-weight:800;color:var(--yellow);margin-right:6px;';
+        timerSpan.textContent = '⏱️ ' + data.elapsed + ' [' + data.stageName + ': ' + data.stageStatus + ']';
+        cfStageStrip.appendChild(timerSpan);
+
+        (data.stages || []).forEach((s) => {
+          const pill = document.createElement('span');
+          pill.className = 'cf-stage-pill ' + (s.status || '');
+          pill.textContent = s.name;
+          cfStageStrip.appendChild(pill);
+        });
+      } else if (data.state === 'cf-failed') {
+        lastFailedCfDeploymentId = data.deploymentId;
+        cfRetryBtn.style.display = 'inline-flex';
+      } else if (data.state === 'cf-complete') {
+        cfRetryBtn.style.display = 'none';
+        diffBtn.textContent = '📝 0 Changed';
+      }
+    });
+
+    window.addEventListener('message', (e) => {
+      if (!e.data || !e.data.__sandboxRuntimeIssue) return;
+      fetch('/api/runtime-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(e.data)
+      }).catch(() => {});
+    });
+
+    auditStats.addEventListener('click', () => {
+      if (!latestAudit) return;
+      const b = latestAudit.breakdownMB;
+      bundleSummaryLine.textContent =
+        'JS: ' + b.JS + ' MB | Lib/WASM: ' + b.LIB_WASM + ' MB | CSS: ' + b.CSS + ' MB | HTML: ' + b.HTML + ' MB | Fonts: ' + b.FONTS + ' MB | Images: ' + b.IMAGES + ' MB';
+      bundleTableBody.innerHTML = '';
+      latestAudit.topFiles.forEach((f, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + f.path + '</td><td>' + f.kb + ' KB</td>';
+        bundleTableBody.appendChild(tr);
+      });
+      bundleModal.classList.add('open');
+    });
+
+    closeBundleBtn.addEventListener('click', () => bundleModal.classList.remove('open'));
+
+    async function loadFileDiffHunks(relFile) {
+      diffViewerBox.style.display = 'block';
+      diffViewerBox.innerHTML = '<div style="color:var(--muted);">Loading line-by-line diff for ' + relFile + '...</div>';
+      const res = await fetch('/api/file-diff?file=' + encodeURIComponent(relFile)).then(r => r.json()).catch(() => ({ hunks: [] }));
+      diffViewerBox.innerHTML = '<div style="font-weight:800;margin-bottom:6px;color:var(--accent);">📄 ' + relFile + ' (Rolling Baseline vs Current Build)</div>';
+      const hunks = res.hunks || [];
+      if (hunks.length === 0) {
+        diffViewerBox.innerHTML += '<div style="color:var(--muted);">No line differences detected.</div>';
+        return;
+      }
+      hunks.forEach((hk) => {
+        const div = document.createElement('div');
+        if (hk.type === 'add') {
+          div.className = 'diff-ln diff-add';
+          div.textContent = '+ [L' + hk.newLn + '] ' + hk.text;
+        } else if (hk.type === 'del') {
+          div.className = 'diff-ln diff-del';
+          div.textContent = '- [L' + hk.oldLn + '] ' + hk.text;
+        } else if (hk.type === 'sep') {
+          div.className = 'diff-ln diff-sep';
+          div.textContent = '@@ ... @@';
+        } else {
+          div.className = 'diff-ln';
+          div.textContent = '  [L' + hk.newLn + '] ' + hk.text;
+        }
+        diffViewerBox.appendChild(div);
+      });
+    }
+
+    diffBtn.addEventListener('click', async () => {
+      diffViewerBox.style.display = 'none';
+      const data = await fetch('/api/diff').then(r => r.json()).catch(() => ({ changedFiles: [] }));
+      diffTableBody.innerHTML = '';
+      const list = data.changedFiles || [];
+      if (list.length === 0) {
+        diffTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">No modified files compared to saved Rolling Baseline.</td></tr>';
+      } else {
+        list.forEach((item) => {
+          const tr = document.createElement('tr');
+          const btnHtml = item.canDiff
+            ? '<button type="button" data-diff-file="' + item.file + '" style="padding:3px 9px;font-size:0.7rem;">🔍 View Diff</button>'
+            : '<span style="color:var(--muted);">Binary</span>';
+          tr.innerHTML = '<td><strong>' + item.status + '</strong></td><td>' + item.file + '</td><td>' + item.sizeKB + ' KB</td><td>' + btnHtml + '</td>';
+          diffTableBody.appendChild(tr);
+        });
+      }
+      diffModal.classList.add('open');
+    });
+
+    diffTableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-diff-file]');
+      if (!btn) return;
+      loadFileDiffHunks(btn.getAttribute('data-diff-file'));
+    });
+
+    pinBaselineBtn.addEventListener('click', async () => {
+      pinBaselineBtn.disabled = true;
+      pinBaselineBtn.textContent = 'Updating Rolling Baseline...';
+      await fetch('/api/update-baseline', { method: 'POST' }).catch(() => {});
+      diffBtn.textContent = '📝 0 Changed';
+      diffTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--green);">✅ Current build saved as new Rolling Baseline!</td></tr>';
+      diffViewerBox.style.display = 'none';
+      setTimeout(() => {
+        pinBaselineBtn.disabled = false;
+        pinBaselineBtn.textContent = '📌 Set Current Build as New Baseline';
+      }, 1400);
+    });
+
+    closeDiffBtn.addEventListener('click', () => diffModal.classList.remove('open'));
+
+    runtimeIssuesBtn.addEventListener('click', () => {
+      activeTab = 'local';
+      tabLocalBtn.classList.add('active');
+      tabDeployBtn.classList.remove('active');
+      showingLogs = true;
+      deployView.style.display = 'none';
+      setupView.style.display = 'flex';
+      previewView.style.display = 'none';
+      toggleLogsBtn.classList.add('btn-active');
+      terminal.scrollTop = terminal.scrollHeight;
+    });
+
+    watchToggleBtn.addEventListener('click', async () => {
+      const pathVal = srcInput.value.trim();
+      if (!pathVal) return;
+      watchEnabled = !watchEnabled;
+      const res = await fetch('/api/toggle-watch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable: watchEnabled, sourceDir: pathVal })
+      }).then(r => r.json()).catch(() => ({ active: false }));
+      watchEnabled = Boolean(res.active);
+      watchToggleBtn.textContent = watchEnabled ? '👀 Auto-Watch: ON' : '👀 Auto-Watch: OFF';
+      watchToggleBtn.classList.toggle('btn-active', watchEnabled);
+    });
+
+    filterErrBtn.addEventListener('click', () => {
+      errorsOnlyFilter = !errorsOnlyFilter;
+      filterErrBtn.textContent = errorsOnlyFilter ? '🔍 Errors Only: ON' : '🔍 Errors Only: OFF';
+      filterErrBtn.classList.toggle('btn-active', errorsOnlyFilter);
+      applyLogFilter();
+    });
+
+    function downloadMdReportFile() {
+      window.location.href = '/api/report.md';
+    }
+    downloadMdBtn.addEventListener('click', downloadMdReportFile);
+    downloadMdTopBtn.addEventListener('click', downloadMdReportFile);
+    deployDlMdBtn.addEventListener('click', downloadMdReportFile);
+
+    copyMdBtn.addEventListener('click', async () => {
+      try {
+        const mdText = await fetch('/api/report.md').then(r => r.text());
+        await navigator.clipboard.writeText(mdText);
+        copyMdBtn.textContent = '✅ Copied!';
+        setTimeout(() => { copyMdBtn.textContent = '📋 Copy .md Report'; }, 1600);
+      } catch (e) {}
+    });
+
+    async function openExplorerPicker() {
+      browseBtn.disabled = true;
+      browseBtn.textContent = 'Opening Explorer...';
+      try {
+        const res = await fetch('/api/pick-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPath: srcInput.value, title: 'Select Project Repository Folder' })
+        });
+        const data = await res.json();
+        if (data.selectedPath) {
+          srcInput.value = data.selectedPath;
+          rebuildBtn.disabled = false;
+          statusBadge.textContent = 'Ready';
+          fetch('/api/projects').then(r => r.json()).then(d => {
+            discoveredProjects = d.projects || [];
+            renderProjectCards();
+            populateDeployRepoDropdown();
+          });
+        }
+      } finally {
+        browseBtn.disabled = false;
+        browseBtn.textContent = '🪟 Browse Folder';
+      }
+    }
+
+    browseBtn.addEventListener('click', openExplorerPicker);
+    dropZone.addEventListener('click', openExplorerPicker);
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+
+      const items = e.dataTransfer.items;
+      if (!items || !items.length) return;
+
+      const entry = items[0].webkitGetAsEntry ? items[0].webkitGetAsEntry() : null;
+      if (entry && entry.isDirectory) {
+        const res = await fetch('/api/resolve-folder-name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderName: entry.name })
+        });
+        const data = await res.json();
+        if (data.resolvedPath) {
+          srcInput.value = data.resolvedPath;
+          rebuildBtn.disabled = false;
+          renderProjectCards();
+          populateDeployRepoDropdown();
+          triggerBuild(false);
+          return;
+        }
+      }
+      openExplorerPicker();
+    });
+
+    srcInput.addEventListener('input', () => {
+      rebuildBtn.disabled = !srcInput.value.trim();
+      renderProjectCards();
+    });
+
+    function triggerBuild(isRebuild) {
+      const pathVal = srcInput.value.trim();
+      if (!pathVal) {
+        openExplorerPicker();
+        return;
+      }
+      terminal.innerHTML = '';
+      fetch('/api/build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceDir: pathVal, isRebuild: Boolean(isRebuild) })
+      });
+    }
+
+    startBuildBtn.addEventListener('click', () => triggerBuild(false));
+    rebuildBtn.addEventListener('click', () => triggerBuild(true));
+
+    routeSelect.addEventListener('change', () => {
+      if (!basePreviewUrl) return;
+      const targetRoute = routeSelect.value || '/';
+      previewIframe.src = basePreviewUrl + targetRoute + '?t=' + Date.now();
+    });
+
+    vpSwitcher.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-vp]');
+      if (!btn) return;
+      vpSwitcher.querySelectorAll('button').forEach(b => b.classList.remove('btn-active'));
+      btn.classList.add('btn-active');
+      const mode = btn.getAttribute('data-vp');
+      iframeShell.className = mode === 'desktop' ? '' : 'vp-' + mode;
+    });
+
+    clearStorageBtn.addEventListener('click', async () => {
+      try {
+        const win = previewIframe.contentWindow;
+        if (win) {
+          try { win.localStorage.clear(); } catch (e) {}
+          try { win.sessionStorage.clear(); } catch (e) {}
+          try {
+            win.document.cookie.split(';').forEach((c) => {
+              win.document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+            });
+          } catch (e) {}
+          if ('caches' in win) {
+            const keys = await win.caches.keys();
+            await Promise.all(keys.map(k => win.caches.delete(k)));
+          }
+          clearStorageBtn.textContent = '✅ Cleared!';
+          setTimeout(() => { clearStorageBtn.textContent = '🧹 Clear Storage'; }, 1600);
+        }
+      } catch (e) {}
+    });
+
+    toggleLogsBtn.addEventListener('click', () => {
+      activeTab = 'local';
+      tabLocalBtn.classList.add('active');
+      tabDeployBtn.classList.remove('active');
+      deployView.style.display = 'none';
+      showingLogs = !showingLogs;
+      if (showingLogs) {
+        setupView.style.display = 'flex';
+        previewView.style.display = 'none';
+        toggleLogsBtn.classList.add('btn-active');
+      } else {
+        setupView.style.display = 'none';
+        previewView.style.display = 'flex';
+        toggleLogsBtn.classList.remove('btn-active');
+      }
+    });
+
+    wipeExitBtn.addEventListener('click', () => {
+      confirmModal.classList.add('open');
+    });
+
+    cancelWipeBtn.addEventListener('click', () => {
+      confirmModal.classList.remove('open');
+    });
+
+    async function executeWipeAndAutoClose(deleteAllCachesToo) {
+      isWipingNow = true;
+      confirmFastWipeBtn.disabled = true;
+      confirmFullWipeBtn.disabled = true;
+      cancelWipeBtn.disabled = true;
+      confirmFastWipeBtn.textContent = '✅ Sandbox Wiped! Closing Studio...';
+      await fetch('/api/wipe-exit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deleteEngineCacheToo: deleteAllCachesToo })
+      }).catch(() => {});
+      try {
+        window.open('', '_self');
+        window.close();
+      } catch (e) {}
+    }
+
+    confirmFastWipeBtn.addEventListener('click', () => executeWipeAndAutoClose(false));
+    confirmFullWipeBtn.addEventListener('click', () => executeWipeAndAutoClose(true));
+
+    window.addEventListener('beforeunload', (e) => {
+      if (!isWipingNow) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (!isWipingNow) {
+        try {
+          navigator.sendBeacon('/api/wipe-exit', JSON.stringify({ deleteEngineCacheToo: false }));
+        } catch (e) {}
+      }
+    });
+  </script>
+</body>
+</html>
